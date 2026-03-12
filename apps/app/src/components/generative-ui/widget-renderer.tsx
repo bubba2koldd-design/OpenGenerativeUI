@@ -301,6 +301,22 @@ input[type="checkbox"], input[type="radio"] {
 a { color: var(--color-text-info); text-decoration: none; }
 a:hover { text-decoration: underline; }
 
+/* Progressive reveal for content children */
+#content > * {
+  animation: fadeSlideIn 0.4s ease-out both;
+}
+#content > *:nth-child(1) { animation-delay: 0s; }
+#content > *:nth-child(2) { animation-delay: 0.06s; }
+#content > *:nth-child(3) { animation-delay: 0.12s; }
+#content > *:nth-child(4) { animation-delay: 0.18s; }
+#content > *:nth-child(5) { animation-delay: 0.24s; }
+#content > *:nth-child(n+6) { animation-delay: 0.3s; }
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -332,11 +348,12 @@ document.addEventListener('click', function(e) {
 
 // Auto-resize: report content height to host
 function reportHeight() {
-  var h = document.documentElement.scrollHeight;
+  var content = document.getElementById('content');
+  var h = content ? content.offsetHeight : document.documentElement.scrollHeight;
   window.parent.postMessage({ type: 'widget-resize', height: h }, '*');
 }
 var ro = new ResizeObserver(reportHeight);
-ro.observe(document.body);
+ro.observe(document.getElementById('content') || document.body);
 window.addEventListener('load', reportHeight);
 // Periodic reports during initial load
 var _resizeInterval = setInterval(reportHeight, 200);
@@ -382,11 +399,18 @@ function assembleDocument(html: string): string {
 // ─── React Component ─────────────────────────────────────────────────
 export function WidgetRenderer({ title, description, html }: WidgetRendererProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [height, setHeight] = useState(500);
+  const [height, setHeight] = useState(0);
+  const [loaded, setLoaded] = useState(false);
 
   const handleMessage = useCallback((e: MessageEvent) => {
-    if (e.data?.type === "widget-resize" && typeof e.data.height === "number") {
-      setHeight(Math.max(100, Math.min(e.data.height + 8, 4000)));
+    // Only handle messages from our own iframe
+    if (
+      iframeRef.current &&
+      e.source === iframeRef.current.contentWindow &&
+      e.data?.type === "widget-resize" &&
+      typeof e.data.height === "number"
+    ) {
+      setHeight(Math.max(50, Math.min(e.data.height + 8, 4000)));
     }
   }, []);
 
@@ -395,22 +419,47 @@ export function WidgetRenderer({ title, description, html }: WidgetRendererProps
     return () => window.removeEventListener("message", handleMessage);
   }, [handleMessage]);
 
-  if (!html) {
-    return null;
-  }
+  // Reset loaded state when html changes
+  useEffect(() => {
+    setLoaded(false);
+    setHeight(0);
+  }, [html]);
 
-  const srcdoc = assembleDocument(html);
+  // Iframe is ready when it has loaded AND reported a valid height
+  const ready = loaded && height > 0;
+
+  const srcdoc = html ? assembleDocument(html) : "";
 
   return (
     <div className="w-full my-3">
-      <iframe
-        ref={iframeRef}
-        srcDoc={srcdoc}
-        sandbox="allow-scripts allow-same-origin"
-        className="w-full border-0"
-        style={{ height, overflow: "hidden", background: "transparent" }}
-        title={title}
-      />
+      {/* Skeleton: visible until iframe is fully ready */}
+      {!ready && (
+        <div className="animate-pulse">
+          <div className="space-y-3 py-4">
+            <div className="h-4 bg-gray-200 dark:bg-zinc-700 rounded w-3/4" />
+            <div className="h-32 bg-gray-200 dark:bg-zinc-700 rounded" />
+            <div className="h-4 bg-gray-200 dark:bg-zinc-700 rounded w-1/2" />
+          </div>
+        </div>
+      )}
+      {/* Iframe: rendered when html exists, but invisible until ready */}
+      {html && (
+        <iframe
+          ref={iframeRef}
+          srcDoc={srcdoc}
+          sandbox="allow-scripts allow-same-origin"
+          className="w-full border-0"
+          onLoad={() => setLoaded(true)}
+          style={{
+            height: ready ? height : 0,
+            overflow: "hidden",
+            background: "transparent",
+            opacity: ready ? 1 : 0,
+            transition: "opacity 300ms ease-in",
+          }}
+          title={title}
+        />
+      )}
     </div>
   );
 }
