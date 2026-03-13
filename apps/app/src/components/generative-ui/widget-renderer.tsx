@@ -396,11 +396,37 @@ function assembleDocument(html: string): string {
 </html>`;
 }
 
+// ─── Loading Phrases ─────────────────────────────────────────────────
+const LOADING_PHRASES = [
+  "Sketching pixels",
+  "Wiring up nodes",
+  "Painting gradients",
+  "Compiling visuals",
+  "Arranging atoms",
+  "Rendering magic",
+  "Polishing edges",
+];
+
+function useLoadingPhrase(active: boolean) {
+  const [index, setIndex] = useState(0);
+  useEffect(() => {
+    if (!active) return;
+    setIndex(0);
+    const interval = setInterval(() => {
+      setIndex((i) => (i + 1) % LOADING_PHRASES.length);
+    }, 1800);
+    return () => clearInterval(interval);
+  }, [active]);
+  return LOADING_PHRASES[index];
+}
+
 // ─── React Component ─────────────────────────────────────────────────
 export function WidgetRenderer({ title, description, html }: WidgetRendererProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [height, setHeight] = useState(0);
   const [loaded, setLoaded] = useState(false);
+  // Track what html has been committed to the iframe to avoid redundant reloads
+  const committedHtmlRef = useRef("");
 
   const handleMessage = useCallback((e: MessageEvent) => {
     // Only handle messages from our own iframe
@@ -419,47 +445,94 @@ export function WidgetRenderer({ title, description, html }: WidgetRendererProps
     return () => window.removeEventListener("message", handleMessage);
   }, [handleMessage]);
 
-  // Reset loaded state when html changes
+  // Write to iframe imperatively — bypasses React reconciliation so the
+  // iframe only reloads when the html *content* truly changes, preserving
+  // internal JS state (Three.js scenes, step counters, etc.) across
+  // CopilotKit re-renders.
   useEffect(() => {
+    if (!html || !iframeRef.current) return;
+    if (html === committedHtmlRef.current) return;
+    committedHtmlRef.current = html;
+    iframeRef.current.srcdoc = assembleDocument(html);
     setLoaded(false);
     setHeight(0);
   }, [html]);
 
+  // Fallback: if iframe has html but hasn't reported ready after 4s, force-show
+  useEffect(() => {
+    if (!html || (loaded && height > 0)) return;
+    const timeout = setTimeout(() => {
+      setLoaded(true);
+      setHeight((h) => (h > 0 ? h : 500));
+    }, 4000);
+    return () => clearTimeout(timeout);
+  }, [html, loaded, height]);
+
   // Iframe is ready when it has loaded AND reported a valid height
   const ready = loaded && height > 0;
-
-  const srcdoc = html ? assembleDocument(html) : "";
+  const showLoading = !!html && !ready;
+  const loadingPhrase = useLoadingPhrase(showLoading);
 
   return (
     <div className="w-full my-3">
-      {/* Skeleton: visible until iframe is fully ready */}
-      {!ready && (
-        <div className="animate-pulse">
-          <div className="space-y-3 py-4">
-            <div className="h-4 bg-gray-200 dark:bg-zinc-700 rounded w-3/4" />
-            <div className="h-32 bg-gray-200 dark:bg-zinc-700 rounded" />
-            <div className="h-4 bg-gray-200 dark:bg-zinc-700 rounded w-1/2" />
+      {/* Loading indicator: visible until iframe is fully ready */}
+      {showLoading && (
+        <div
+          className="overflow-hidden rounded-xl"
+          style={{
+            border: "1px solid var(--color-border-glass)",
+            background: "var(--surface-primary)",
+          }}
+        >
+          {/* Animated gradient border top */}
+          <div
+            style={{
+              height: 2,
+              background: "linear-gradient(90deg, var(--color-lilac), var(--color-mint), var(--color-lilac))",
+              backgroundSize: "200% 100%",
+              animation: "shimmer 1.5s ease-in-out infinite",
+            }}
+          />
+          <div className="flex items-center gap-3 px-4 py-3">
+            {/* Spinning icon */}
+            <div
+              style={{
+                width: 18,
+                height: 18,
+                borderRadius: "50%",
+                border: "2px solid var(--color-border-light)",
+                borderTopColor: "var(--color-lilac-dark)",
+                animation: "spin 0.8s linear infinite",
+                flexShrink: 0,
+              }}
+            />
+            <span
+              className="text-[13px] font-medium"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              {loadingPhrase}...
+            </span>
           </div>
         </div>
       )}
-      {/* Iframe: rendered when html exists, but invisible until ready */}
-      {html && (
-        <iframe
-          ref={iframeRef}
-          srcDoc={srcdoc}
-          sandbox="allow-scripts allow-same-origin"
-          className="w-full border-0"
-          onLoad={() => setLoaded(true)}
-          style={{
-            height: ready ? height : 0,
-            overflow: "hidden",
-            background: "transparent",
-            opacity: ready ? 1 : 0,
-            transition: "opacity 300ms ease-in",
-          }}
-          title={title}
-        />
-      )}
+      {/* Iframe: always mounted so ref is stable; srcdoc set imperatively.
+          No srcDoc React prop — prevents React from reloading the iframe
+          on parent re-renders. */}
+      <iframe
+        ref={iframeRef}
+        sandbox="allow-scripts allow-same-origin"
+        className="w-full border-0"
+        onLoad={() => setLoaded(true)}
+        style={{
+          height: ready ? height : 0,
+          overflow: "hidden",
+          background: "transparent",
+          opacity: ready ? 1 : 0,
+          transition: "opacity 300ms ease-in",
+          display: html ? undefined : "none",
+        }}
+        title={title}
+      />
     </div>
   );
 }

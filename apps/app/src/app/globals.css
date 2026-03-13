@@ -554,3 +554,13 @@ body, html {
   0%   { outline: 2px solid rgba(190, 194, 255, 0.5); outline-offset: 2px; }
   100% { outline: 2px solid transparent; outline-offset: 8px; }
 }
+
+/* === Widget Loading Animations === */
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
