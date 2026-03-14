@@ -22,7 +22,7 @@ Open Generative UI is an open-source showcase and template for building rich, in
 
 ## 2. Community Values
 
-At Open Generative UI and across the CopilotKit ecosystem, we prioritize the following values:
+At CopilotKit, we prioritize the following values:
 
 | **Value**         | **Description**                                                                                            |
 | ----------------- | ---------------------------------------------------------------------------------------------------------- |
@@ -35,7 +35,7 @@ At Open Generative UI and across the CopilotKit ecosystem, we prioritize the fol
 
 ## 3. Expected Behavior
 
-As a participant in the Open Generative UI community, you are expected to:
+As a participant in the CopilotKit community, you are expected to:
 
 - **Be Respectful and Inclusive**: Treat all individuals with respect and kindness, regardless of their background, identity, or experience level.
 - **Communicate Constructively**: Engage in discussions that are constructive, focusing on ideas and solutions rather than personal opinions.
@@ -94,7 +94,7 @@ Consequences for violating the Code of Conduct will be determined based on the s
 
 ## 7. Scope
 
-This Code of Conduct applies to all participants in the Open Generative UI community, including contributors, maintainers, and users, both online and offline. It encompasses interactions in the following areas:
+This Code of Conduct applies to all participants in the CopilotKit community, including contributors, maintainers, and users, both online and offline. It encompasses interactions in the following areas:
 
 - GitHub discussions and issues on the [open-generative-ui](https://github.com/CopilotKit/open-generative-ui) repository
 - The broader [CopilotKit Discord](https://discord.gg/6dffbvGU3D)

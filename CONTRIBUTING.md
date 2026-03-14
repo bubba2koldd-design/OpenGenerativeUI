@@ -49,35 +49,54 @@ This is a **Turborepo monorepo** with a Next.js frontend and a LangGraph Python 
 
 > **Windows users:** Enable **Developer Mode** (Settings > System > For developers > Developer Mode → On) to allow symlink creation. This is required for Next.js standalone builds and pnpm to work correctly.
 
-### 2) Install Dependencies
+### 2) Install Dependencies and Set Up
+
+The quickest way to get started is with the Makefile:
+
+```bash
+make setup    # Installs deps + creates .env template
+```
+
+Or manually:
 
 ```bash
 pnpm install
-```
-
-### 3) Set Up Environment Variables
-
-```bash
-# Add your OpenAI API key for the agent
 echo 'OPENAI_API_KEY=your-key-here' > apps/agent/.env
 ```
 
-### 4) Start Development
+Then add your real OpenAI API key to `apps/agent/.env`.
+
+### 3) Run the Project
 
 ```bash
-# Start all services (frontend + agent)
-pnpm dev
-
-# Or start individually:
-pnpm dev:app    # Next.js frontend on http://localhost:3000
-pnpm dev:agent  # LangGraph agent on http://localhost:8123
+make dev      # Start all services (frontend + agent + mcp)
 ```
 
-### 5) Build
+Or run services individually:
 
 ```bash
-pnpm build
+make dev-app    # Next.js frontend on http://localhost:3000
+make dev-agent  # LangGraph agent on http://localhost:8123
+make dev-mcp    # MCP server
 ```
+
+You can also use `pnpm` directly:
+
+```bash
+pnpm dev          # All services
+pnpm dev:app      # Frontend only
+pnpm dev:agent    # Agent only
+```
+
+### 4) Build and Lint
+
+```bash
+make build    # Build all apps
+make lint     # Lint all apps
+make clean    # Clean build artifacts
+```
+
+Run `make help` to see all available commands.
 
 ## Step 4: Create a branch
 
