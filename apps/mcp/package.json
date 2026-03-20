@@ -1,0 +1,32 @@
+{
+  "name": "open-generative-ui-mcp",
+  "version": "0.1.0",
+  "description": "Standalone MCP server for OpenGenerativeUI design system and skills",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "dev:stdio": "tsx src/stdio.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "start:stdio": "node dist/stdio.js",
+    "lint": "tsc --noEmit"
+  },
+  "keywords": ["mcp", "model-context-protocol", "generative-ui", "design-system"],
+  "author": "CopilotKit",
+  "license": "MIT",
+  "dependencies": {
+    "@hono/node-server": "^1",
+    "@modelcontextprotocol/sdk": "^1.25.3",
+    "hono": "^4",
+    "zod": "^3.23"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "tsx": "^4",
+    "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

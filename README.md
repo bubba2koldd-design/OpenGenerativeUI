@@ -42,14 +42,60 @@ make dev      # Start all services
 
 You can also use `pnpm` directly (`pnpm dev`, `pnpm dev:app`, `pnpm dev:agent`, etc.).
 
+## MCP Server (Self-Hosted)
+
+The repo includes a standalone [Model Context Protocol](https://modelcontextprotocol.io) server that exposes the design system, skill instructions, and an HTML document assembler to any MCP-compatible client — including Claude Desktop, Claude Code, and Cursor.
+
+### What it provides
+
+- **`assemble_document` tool** — wraps HTML fragments with the full design system CSS and bridge JS, returning an iframe-ready document
+- **Skill resources** — browse and read skill instruction documents (`skills://list`, `skills://{name}`)
+- **Prompt templates** — pre-composed prompts for widgets, SVG diagrams, and advanced visualizations
+
+### Claude Desktop (stdio)
+
+Add to your Claude Desktop config (`claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "open-generative-ui": {
+      "command": "node",
+      "args": ["dist/stdio.js"],
+      "cwd": "/path/to/apps/mcp"
+    }
+  }
+}
+```
+
+### Claude Code / HTTP clients
+
+```bash
+# Start the HTTP server
+cd apps/mcp && pnpm dev
+```
+
+Add to `.mcp.json`:
+
+```json
+{
+  "openGenerativeUI": {
+    "url": "http://localhost:3100/mcp"
+  }
+}
+```
+
+See [apps/mcp/README.md](apps/mcp/README.md) for full configuration, Docker deployment, and API reference.
+
 ## Architecture
 
-Turborepo monorepo with two apps:
+Turborepo monorepo with three packages:
 
 ```
 apps/
 ├── app/       Next.js 16 frontend (CopilotKit v2, React 19, Tailwind 4)
-└── agent/     LangGraph Python agent (GPT-5.4, CopilotKit middleware)
+├── agent/     LangGraph Python agent (GPT-5.4, CopilotKit middleware)
+└── mcp/       Standalone MCP server (design system + skills + document assembler)
 ```
 
 ### How It Works
