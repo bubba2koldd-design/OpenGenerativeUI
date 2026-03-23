@@ -1,16 +1,91 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
+import { THEME_CSS } from "@/components/generative-ui/widget-renderer";
+
+const CHART_COLORS = [
+  "#3b82f6", "#8b5cf6", "#ec4899", "#f59e0b",
+  "#10b981", "#06b6d4", "#f97316",
+];
 
 interface TemplateCardProps {
   id: string;
   name: string;
   description: string;
   html: string;
+  componentType?: string;
+  componentData?: Record<string, unknown>;
   dataDescription: string;
   version: number;
   onApply: (id: string) => void;
   onDelete: (id: string) => void;
+}
+
+/** Mini bar chart preview rendered as inline SVG */
+function BarChartPreview({ data }: { data: { label: string; value: number }[] }) {
+  if (!data?.length) return null;
+  const max = Math.max(...data.map((d) => d.value));
+  const barWidth = Math.min(40, Math.floor(280 / data.length) - 8);
+  const chartWidth = data.length * (barWidth + 8);
+  const chartHeight = 100;
+
+  return (
+    <svg
+      viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+      width="100%"
+      height="100%"
+      preserveAspectRatio="xMidYMid meet"
+      style={{ padding: 16 }}
+    >
+      {data.map((d, i) => {
+        const h = max > 0 ? (d.value / max) * (chartHeight - 20) : 0;
+        return (
+          <rect
+            key={i}
+            x={i * (barWidth + 8)}
+            y={chartHeight - h - 10}
+            width={barWidth}
+            height={h}
+            rx={3}
+            fill={CHART_COLORS[i % CHART_COLORS.length]}
+          />
+        );
+      })}
+    </svg>
+  );
+}
+
+/** Mini pie chart preview rendered as inline SVG */
+function PieChartPreview({ data }: { data: { label: string; value: number }[] }) {
+  if (!data?.length) return null;
+  const total = data.reduce((sum, d) => sum + d.value, 0);
+  if (total === 0) return null;
+
+  const cx = 60, cy = 60, r = 50;
+  let cumulative = 0;
+  const slices = data.map((d, i) => {
+    const startAngle = (cumulative / total) * 2 * Math.PI - Math.PI / 2;
+    cumulative += d.value;
+    const endAngle = (cumulative / total) * 2 * Math.PI - Math.PI / 2;
+    const largeArc = d.value / total > 0.5 ? 1 : 0;
+    const x1 = cx + r * Math.cos(startAngle);
+    const y1 = cy + r * Math.sin(startAngle);
+    const x2 = cx + r * Math.cos(endAngle);
+    const y2 = cy + r * Math.sin(endAngle);
+    return (
+      <path
+        key={i}
+        d={`M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${largeArc},1 ${x2},${y2} Z`}
+        fill={CHART_COLORS[i % CHART_COLORS.length]}
+      />
+    );
+  });
+
+  return (
+    <svg viewBox="0 0 120 120" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+      {slices}
+    </svg>
+  );
 }
 
 export function TemplateCard({
@@ -18,6 +93,8 @@ export function TemplateCard({
   name,
   description,
   html,
+  componentType,
+  componentData,
   dataDescription,
   version,
   onApply,
@@ -26,19 +103,31 @@ export function TemplateCard({
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [previewReady, setPreviewReady] = useState(false);
 
-  useEffect(() => {
-    if (!iframeRef.current || !html) return;
-    const doc = `<!DOCTYPE html>
+  const previewHtml = html ? `<!DOCTYPE html>
 <html><head><meta charset="utf-8">
 <style>
+${THEME_CSS}
 * { box-sizing: border-box; margin: 0; }
-body { font-family: system-ui, sans-serif; font-size: 16px; color: #1a1a1a; background: #fff; transform-origin: top left; overflow: hidden; }
-@media (prefers-color-scheme: dark) { body { color: #e8e6de; background: #1a1a18; } }
-</style></head><body><div id="content">${html}</div></body></html>`;
-    iframeRef.current.srcdoc = doc;
-    const timer = setTimeout(() => setPreviewReady(true), 500);
-    return () => clearTimeout(timer);
-  }, [html]);
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--color-text-primary);
+  background: var(--color-background-primary);
+  overflow: hidden;
+}
+</style></head><body><div id="content">${html}</div></body></html>` : "";
+
+  useEffect(() => {
+    if (!iframeRef.current || !previewHtml) return;
+    iframeRef.current.srcdoc = previewHtml;
+  }, [previewHtml]);
+
+  // Determine chart data for mini preview
+  const chartData = componentData?.data as { label: string; value: number }[] | undefined;
+  const isBarChart = componentType === "barChart";
+  const isPieChart = componentType === "pieChart";
+  const isChart = isBarChart || isPieChart;
 
   return (
     <div
@@ -53,18 +142,34 @@ body { font-family: system-ui, sans-serif; font-size: 16px; color: #1a1a1a; back
         className="relative overflow-hidden"
         style={{ height: 140, background: "var(--color-background-secondary, #f7f6f3)" }}
       >
-        <iframe
-          ref={iframeRef}
-          sandbox="allow-same-origin"
-          className="border-0 w-[300%] h-[300%] origin-top-left"
-          style={{
-            transform: "scale(0.333)",
-            pointerEvents: "none",
-            opacity: previewReady ? 1 : 0,
-            transition: "opacity 300ms",
-          }}
-          title={`Preview: ${name}`}
-        />
+        {isChart && chartData ? (
+          <div className="flex items-center justify-center h-full">
+            {isBarChart && <BarChartPreview data={chartData} />}
+            {isPieChart && <PieChartPreview data={chartData} />}
+          </div>
+        ) : html ? (
+          <iframe
+            ref={iframeRef}
+            sandbox="allow-same-origin allow-scripts"
+            onLoad={() => setPreviewReady(true)}
+            className="border-0 w-[300%] h-[300%] origin-top-left"
+            style={{
+              transform: "scale(0.333)",
+              pointerEvents: "none",
+              opacity: previewReady ? 1 : 0,
+              transition: "opacity 300ms",
+            }}
+            title={`Preview: ${name}`}
+          />
+        ) : (
+          <div className="flex items-center justify-center h-full">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--text-tertiary, #999)", opacity: 0.5 }}>
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <path d="M3 9h18" />
+              <path d="M9 21V9" />
+            </svg>
+          </div>
+        )}
         {/* Version badge */}
         <span
           className="absolute top-2 right-2 text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
@@ -102,9 +207,7 @@ body { font-family: system-ui, sans-serif; font-size: 16px; color: #1a1a1a; back
       </div>
 
       {/* Actions */}
-      <div
-        className="flex gap-2 p-3 pt-0"
-      >
+      <div className="flex gap-2 p-3 pt-0">
         <button
           onClick={() => onApply(id)}
           className="flex-1 text-xs font-medium py-1.5 rounded-lg transition-all duration-150 hover:scale-[1.02] text-white"
