@@ -79,7 +79,7 @@ def list_templates(runtime: ToolRuntime):
 
 
 @tool
-def apply_template(name: str = "", template_id: str = "", runtime: ToolRuntime):
+def apply_template(name: str = "", template_id: str = "", runtime: ToolRuntime = None):
     """
     Retrieve a saved template's HTML so you can adapt it with new data.
     After calling this, generate a NEW widget in the same style and render via widgetRenderer.
