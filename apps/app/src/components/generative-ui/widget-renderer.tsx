@@ -497,19 +497,21 @@ export function WidgetRenderer({ title, description, html }: WidgetRendererProps
   }
 
   // Initialize the iframe shell once when html first appears.
-  // After that, stream content updates via postMessage — no iframe reload.
+  // Shell loads EMPTY so partial streaming fragments (e.g. unclosed <style>)
+  // can't break the bridge script. All content is streamed via postMessage.
   useEffect(() => {
     if (!html || !iframeRef.current) return;
 
     if (!shellReadyRef.current) {
-      // First time: load the full document so the shell (styles, bridge JS) is ready
       shellReadyRef.current = true;
-      committedHtmlRef.current = html;
-      iframeRef.current.srcdoc = assembleShell(html);
+      iframeRef.current.srcdoc = assembleShell();
       return;
     }
 
-    // Subsequent updates: stream content into existing iframe via postMessage
+    // Wait for iframe to load before sending postMessage
+    if (!loaded) return;
+
+    // Stream content into existing iframe via postMessage
     if (html === committedHtmlRef.current) return;
     committedHtmlRef.current = html;
 
@@ -520,7 +522,7 @@ export function WidgetRenderer({ title, description, html }: WidgetRendererProps
         "*"
       );
     }
-  }, [html]);
+  }, [html, loaded]);
 
   // Detect when html has stopped changing (streaming complete).
   // Resets a debounce timer on every html update — settles after 800ms of no changes.
