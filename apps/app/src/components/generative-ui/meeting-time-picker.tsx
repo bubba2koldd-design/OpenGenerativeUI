@@ -46,6 +46,12 @@ export function MeetingTimePicker({
 
   return (
     <div className="rounded-2xl shadow-lg max-w-md w-full border dark:border-zinc-700 mx-auto mb-6 bg-white dark:bg-zinc-800">
+      <style>{`
+        @keyframes fadeSlideUp {
+          from { opacity: 0; transform: translateY(12px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
       <div className="backdrop-blur-md p-8 w-full rounded-2xl">
         {/* Show confirmation or prompt */}
         {selectedSlot ? (
@@ -98,6 +104,10 @@ export function MeetingTimePicker({
                       hover:scale-102 active:scale-98
                       flex justify-between items-center
                       hover:bg-blue-50 dark:hover:bg-blue-900/30"
+                    style={{
+                      animation: "fadeSlideUp 0.4s ease-out both",
+                      animationDelay: `${index * 80}ms`,
+                    }}
                   >
                     <div className="text-left">
                       <div className="font-bold text-gray-900 dark:text-zinc-100">{slot.date}</div>
@@ -115,6 +125,10 @@ export function MeetingTimePicker({
                     text-gray-600 dark:text-zinc-400 hover:text-gray-800 dark:hover:text-zinc-200
                     transition-all cursor-pointer
                     hover:bg-gray-100 dark:hover:bg-zinc-700"
+                  style={{
+                    animation: "fadeSlideUp 0.4s ease-out both",
+                    animationDelay: `${slots.length * 80}ms`,
+                  }}
                 >
                   None of these work
                 </button>

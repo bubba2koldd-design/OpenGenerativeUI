@@ -70,7 +70,10 @@ export function PieChart({ title, description, data }: PieChartProps) {
               cx="50%"
               cy="50%"
               outerRadius={100}
-              isAnimationActive={false}
+              isAnimationActive={true}
+              animationDuration={800}
+              animationEasing="ease-out"
+              animationBegin={200}
             />
             <Tooltip contentStyle={CHART_CONFIG.tooltipStyle} />
           </RechartsPieChart>

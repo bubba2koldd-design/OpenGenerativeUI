@@ -62,7 +62,7 @@ export function BarChart({ title, description, data }: BarChartProps) {
               stroke="var(--chart-axis)"
             />
             <Tooltip contentStyle={CHART_CONFIG.tooltipStyle} />
-            <Bar isAnimationActive={false} dataKey="value" radius={[4, 4, 0, 0]} />
+            <Bar isAnimationActive={true} animationDuration={800} animationEasing="ease-out" dataKey="value" radius={[4, 4, 0, 0]} />
           </RechartsBarChart>
         </ResponsiveContainer>
       </div>
