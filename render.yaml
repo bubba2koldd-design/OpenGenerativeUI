@@ -1,0 +1,40 @@
+services:
+  # ── Agent (LangGraph Python) — private, not exposed to internet ──
+  - type: pserv
+    name: open-generative-ui-agent
+    runtime: python
+    plan: starter
+    rootDir: apps/agent
+    buildCommand: "pip install uv && uv sync --frozen"
+    startCommand: "uv run langgraph dev --host 0.0.0.0 --port $PORT --no-browser --no-reload"
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12"
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: LANGSMITH_API_KEY
+        sync: false
+    buildFilter:
+      paths:
+        - apps/agent/**
+
+  # ── Frontend (Next.js) — public web service ──
+  - type: web
+    name: open-generative-ui-app
+    runtime: docker
+    plan: starter
+    dockerfilePath: docker/Dockerfile.app
+    envVars:
+      - key: LANGGRAPH_DEPLOYMENT_URL
+        fromService:
+          name: open-generative-ui-agent
+          type: pserv
+          property: hostport
+      - key: LANGSMITH_API_KEY
+        sync: false
+    buildFilter:
+      paths:
+        - apps/app/**
+        - package.json
+        - pnpm-lock.yaml
+        - docker/Dockerfile.app
