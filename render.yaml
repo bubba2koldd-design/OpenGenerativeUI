@@ -1,0 +1,47 @@
+services:
+  # ── Agent (LangGraph Python) — private, not exposed to internet ──
+  - type: pserv
+    name: open-generative-ui-agent
+    runtime: docker
+    plan: starter
+    dockerfilePath: docker/Dockerfile.agent
+    healthCheckPath: /ok
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: LANGSMITH_API_KEY
+        sync: false
+      - key: LLM_MODEL
+        value: gpt-5.4-2026-03-05
+    buildFilter:
+      paths:
+        - apps/agent/**
+        - docker/Dockerfile.agent
+
+  # ── Frontend (Next.js) — public web service ──
+  - type: web
+    name: open-generative-ui-app
+    runtime: docker
+    plan: starter
+    dockerfilePath: docker/Dockerfile.app
+    envVars:
+      - key: LANGGRAPH_DEPLOYMENT_URL
+        fromService:
+          name: open-generative-ui-agent
+          type: pserv
+          property: hostport
+      - key: LANGSMITH_API_KEY
+        sync: false
+      - key: RATE_LIMIT_ENABLED
+        value: "false"
+      - key: RATE_LIMIT_WINDOW_MS
+        value: "60000"
+      - key: RATE_LIMIT_MAX
+        value: "40"
+    buildFilter:
+      paths:
+        - apps/app/**
+        - package.json
+        - pnpm-lock.yaml
+        - turbo.json
+        - docker/Dockerfile.app

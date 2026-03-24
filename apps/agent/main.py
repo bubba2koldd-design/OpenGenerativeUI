@@ -3,6 +3,8 @@ This is the main entry point for the agent.
 It defines the workflow graph, state, tools, nodes and edges.
 """
 
+import os
+
 from copilotkit import CopilotKitMiddleware
 from langchain.agents import create_agent
 from langchain_openai import ChatOpenAI
@@ -17,7 +19,7 @@ from skills import load_all_skills
 _skills_text = load_all_skills()
 
 agent = create_agent(
-    model=ChatOpenAI(model="gpt-5.4-2026-03-05"),
+    model=ChatOpenAI(model=os.environ.get("LLM_MODEL", "gpt-5.4-2026-03-05")),
     tools=[query_data, *todo_tools, generate_form, *template_tools],
     middleware=[CopilotKitMiddleware()],
     state_schema=AgentState,

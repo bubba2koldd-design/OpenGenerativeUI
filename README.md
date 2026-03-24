@@ -23,6 +23,16 @@ make setup    # Install deps + create .env template
 make dev      # Start all services
 ```
 
+> **Strong models required.** Generative UI demands high-capability models that can produce complex, well-structured HTML/SVG in a single pass. Set `LLM_MODEL` in your `.env` to one of:
+>
+> | Model | Provider |
+> |-------|----------|
+> | `gpt-5.4` / `gpt-5.4-pro` | OpenAI |
+> | `claude-opus-4-6` | Anthropic |
+> | `gemini-3.1-pro` | Google |
+>
+> Smaller or weaker models will produce broken layouts, missing interactivity, or incomplete visualizations.
+
 - **App**: http://localhost:3000
 - **Agent**: http://localhost:8123
 
