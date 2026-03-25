@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, useMemo, type ReactNode } from "react";
+import { useState, useCallback, useMemo, useRef, type ReactNode } from "react";
 import { useAgent } from "@copilotkit/react-core/v2";
 import { SEED_TEMPLATES } from "@/components/template-library/seed-templates";
 
@@ -35,29 +35,28 @@ export function SaveTemplateOverlay({
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [templateName, setTemplateName] = useState("");
 
-  // Capture pending_template once — it may be cleared by the agent later.
-  // Syncs external agent state into local state (legitimate effect-based setState).
+  // Capture pending_template at mount time — it may be cleared by the agent later.
+  // Uses ref (not state) to avoid an async re-render that would shift sibling positions
+  // and cause React to remount the iframe, losing rendered 3D/canvas content.
   const pending = agent.state?.pending_template as { id: string; name: string } | null | undefined;
-  const [capturedSource, setCapturedSource] = useState<{ id: string; name: string } | null>(null);
-  useEffect(() => {
-    if (pending?.id) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time capture of external agent state
-      setCapturedSource((prev) => prev ?? pending);
-    }
-  }, [pending]);
+  const sourceRef = useRef<{ id: string; name: string } | null>(null);
+  // eslint-disable-next-line react-hooks/refs -- one-time ref init during render (React-endorsed pattern)
+  if (pending?.id && !sourceRef.current) {
+    sourceRef.current = pending; // eslint-disable-line react-hooks/refs
+  }
 
   // Check if this content matches an existing template:
   // 1. Exact HTML match (seed templates rendered as-is)
   // 2. Source template captured from pending_template (applied templates with modified data)
   const matchedTemplate = useMemo(() => {
     // First check source template from apply flow
-    if (capturedSource) {
+    if (sourceRef.current) { // eslint-disable-line react-hooks/refs
       const allTemplates = [
         ...SEED_TEMPLATES,
         ...((agent.state?.templates as { id: string; name: string }[]) || []),
       ];
-      const found = allTemplates.find((t) => t.id === capturedSource.id);
-      if (found) return found;
+      const source = allTemplates.find((t) => t.id === sourceRef.current!.id); // eslint-disable-line react-hooks/refs
+      if (source) return source;
     }
     // Then check exact HTML match
     if (!html) return null;
@@ -68,7 +67,7 @@ export function SaveTemplateOverlay({
       ...((agent.state?.templates as { id: string; name: string; html: string }[]) || []),
     ];
     return allTemplates.find((t) => t.html && normalise(t.html) === norm) ?? null;
-  }, [html, agent.state?.templates, capturedSource]);
+  }, [html, agent.state?.templates]);
 
   const handleSave = useCallback(() => {
     const name = templateName.trim() || title || "Untitled Template";
