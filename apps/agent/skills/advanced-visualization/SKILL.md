@@ -668,7 +668,15 @@ Only these CDN origins work (CSP-enforced):
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 ```
 
-**Three.js** (3D graphics):
+**Three.js** (3D graphics) — use ES module import (import map resolves bare specifiers):
+```html
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+// ... your Three.js code here
+</script>
+```
+Alternative UMD (global `THREE` variable):
 ```html
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 ```

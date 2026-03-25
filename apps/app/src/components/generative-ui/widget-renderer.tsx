@@ -428,7 +428,13 @@ window.addEventListener('message', function(e) {
         content.setAttribute('data-exec-' + hash, '1');
         try {
           var newScript = document.createElement('script');
-          if (scriptInfo.type) newScript.type = scriptInfo.type;
+          // Auto-detect ES module syntax: if the script contains import/export
+          // statements but lacks type="module", promote it so the import map applies.
+          var effectiveType = scriptInfo.type;
+          if (!effectiveType && scriptInfo.text && /\\b(import\\s|export\\s|import\\()/.test(scriptInfo.text)) {
+            effectiveType = 'module';
+          }
+          if (effectiveType) newScript.type = effectiveType;
           if (scriptInfo.src) {
             newScript.src = scriptInfo.src;
             newScript.onload = function() { runScripts(scripts, idx + 1); };
@@ -471,6 +477,20 @@ function assembleShell(initialHtml: string = ""): string {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://esm.sh/three",
+      "three/": "https://esm.sh/three/",
+      "gsap": "https://esm.sh/gsap",
+      "gsap/": "https://esm.sh/gsap/",
+      "d3": "https://esm.sh/d3",
+      "d3/": "https://esm.sh/d3/",
+      "chart.js": "https://esm.sh/chart.js",
+      "chart.js/": "https://esm.sh/chart.js/"
+    }
+  }
+  </script>
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'self';
     script-src 'unsafe-inline' 'unsafe-eval'
@@ -590,8 +610,8 @@ export function WidgetRenderer({ title, description, html }: WidgetRendererProps
 
     const iframe = iframeRef.current;
     if (iframe.contentWindow) {
-      // targetOrigin "*" is required: the sandboxed iframe (allow-scripts only,
-      // no allow-same-origin) has a null origin, so no specific origin can be used.
+      // targetOrigin "*" is required: sandboxed iframes may have a null origin
+      // depending on browser, so no specific origin can be used.
       iframe.contentWindow.postMessage(
         { type: "update-content", html },
         "*"
@@ -680,7 +700,10 @@ export function WidgetRenderer({ title, description, html }: WidgetRendererProps
             content streamed via postMessage for progressive rendering. */}
         <iframe
           ref={iframeRef}
-          sandbox="allow-scripts"
+          // allow-same-origin is required for import maps to work in srcdoc iframes.
+          // Safe here because no auth/session data is exposed client-side.
+          // See: https://github.com/CopilotKit/OpenGenerativeUI/issues/3
+          sandbox="allow-scripts allow-same-origin"
           className="w-full border-0"
           onLoad={() => setLoaded(true)}
           style={{
