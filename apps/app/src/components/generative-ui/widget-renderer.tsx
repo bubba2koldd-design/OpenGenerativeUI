@@ -369,7 +369,7 @@ window.addEventListener('message', function(e) {
     var scriptCloses = (rawHtml.match(/<\\/script>/gi) || []).length;
     var allScriptsClosed = scriptOpens <= scriptCloses;
     tmp.querySelectorAll('script').forEach(function(s) {
-      incomingScripts.push({ src: s.src, text: s.textContent });
+      incomingScripts.push({ src: s.src, text: s.textContent, type: s.type || '' });
       s.remove();
     });
 
@@ -414,24 +414,36 @@ window.addEventListener('message', function(e) {
       content.innerHTML = tmp.innerHTML;
     }
 
-    // Execute only new scripts — skip entirely while a <script> tag is still streaming
+    // Execute only new scripts — skip entirely while a <script> tag is still streaming.
+    // External scripts (src) are loaded sequentially and we wait for each to finish
+    // before running subsequent scripts, so inline code can use libraries like Three.js.
     if (allScriptsClosed) {
-      incomingScripts.forEach(function(scriptInfo) {
+      (function runScripts(scripts, idx) {
+        if (idx >= scripts.length) return;
+        var scriptInfo = scripts[idx];
         var key = scriptInfo.src || scriptInfo.text;
-        if (!key || !key.trim()) return;
+        if (!key || !key.trim()) { runScripts(scripts, idx + 1); return; }
         var hash = btoa(unescape(encodeURIComponent(key))).slice(0, 16).replace(/[^a-zA-Z0-9]/g, '');
-        if (!hash || content.getAttribute('data-exec-' + hash)) return;
+        if (!hash || content.getAttribute('data-exec-' + hash)) { runScripts(scripts, idx + 1); return; }
         content.setAttribute('data-exec-' + hash, '1');
         try {
           var newScript = document.createElement('script');
+          if (scriptInfo.type) newScript.type = scriptInfo.type;
           if (scriptInfo.src) {
             newScript.src = scriptInfo.src;
+            newScript.onload = function() { runScripts(scripts, idx + 1); };
+            newScript.onerror = function() { runScripts(scripts, idx + 1); };
+            content.appendChild(newScript);
           } else {
             newScript.textContent = scriptInfo.text;
+            content.appendChild(newScript);
+            runScripts(scripts, idx + 1);
           }
-          content.appendChild(newScript);
-        } catch(e) { console.warn('[widget] script exec failed:', e); }
-      });
+        } catch(e) {
+          console.warn('[widget] script exec failed:', e);
+          runScripts(scripts, idx + 1);
+        }
+      })(incomingScripts, 0);
     }
     reportHeight();
   }
@@ -469,7 +481,11 @@ function assembleShell(initialHtml: string = ""): string {
     style-src 'unsafe-inline';
     img-src 'self' data: blob:;
     font-src 'self' data:;
-    connect-src 'self';
+    connect-src 'self'
+      https://cdnjs.cloudflare.com
+      https://esm.sh
+      https://cdn.jsdelivr.net
+      https://unpkg.com;
   ">
   <style>
     ${THEME_CSS}

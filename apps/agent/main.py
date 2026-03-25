@@ -4,26 +4,24 @@ It defines the workflow graph, state, tools, nodes and edges.
 """
 
 import os
+from pathlib import Path
 
 from copilotkit import CopilotKitMiddleware
-from langchain.agents import create_agent
+from deepagents import create_deep_agent
 from langchain_openai import ChatOpenAI
 
 from src.query import query_data
 from src.todos import AgentState, todo_tools
 from src.form import generate_form
 from src.templates import template_tools
-from skills import load_all_skills
 
-# Load all visualization skills
-_skills_text = load_all_skills()
-
-agent = create_agent(
+agent = create_deep_agent(
     model=ChatOpenAI(model=os.environ.get("LLM_MODEL", "gpt-5.4-2026-03-05")),
     tools=[query_data, *todo_tools, generate_form, *template_tools],
     middleware=[CopilotKitMiddleware()],
-    state_schema=AgentState,
-    system_prompt=f"""
+    context_schema=AgentState,
+    skills=[str(Path(__file__).parent / "skills")],
+    system_prompt="""
         You are a helpful assistant that helps users understand CopilotKit and LangGraph used together.
 
         Be brief in your explanations of CopilotKit and LangGraph, 1 to 2 sentences.
@@ -46,10 +44,6 @@ agent = create_agent(
         - CSS variables for light/dark mode theming (use var(--color-text-primary), etc.)
         - Pre-styled form elements (buttons, inputs, sliders look native automatically)
         - Pre-built SVG CSS classes for color ramps (.c-purple, .c-teal, .c-blue, etc.)
-
-        Follow the skills below for how to produce high-quality visuals:
-
-        {_skills_text}
 
         ## UI Templates
 

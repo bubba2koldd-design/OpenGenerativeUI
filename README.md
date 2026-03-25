@@ -1,6 +1,6 @@
 # Open Generative UI
 
-An open-source showcase for building rich, interactive AI-generated UI with [CopilotKit](https://copilotkit.ai) and [LangGraph](https://langchain-ai.github.io/langgraph/). Ask the agent to visualize algorithms, create 3D animations, render charts, or generate interactive diagrams — all rendered as live HTML/SVG inside a sandboxed iframe.
+An open-source showcase for building rich, interactive AI-generated UI with [CopilotKit](https://copilotkit.ai) and [LangChain Deep Agents](https://docs.langchain.com/oss/python/deepagents/overview). Ask the agent to visualize algorithms, create 3D animations, render charts, or generate interactive diagrams — all rendered as live HTML/SVG inside a sandboxed iframe.
 
 https://github.com/user-attachments/assets/ed28c734-e54e-4412-873f-4801da544a7f
 
@@ -104,14 +104,27 @@ Turborepo monorepo with three packages:
 ```
 apps/
 ├── app/       Next.js 16 frontend (CopilotKit v2, React 19, Tailwind 4)
-├── agent/     LangGraph Python agent (GPT-5.4, CopilotKit middleware)
+├── agent/     Deep Agent (deepagents + CopilotKit middleware, skills-based)
 └── mcp/       Standalone MCP server (design system + skills + document assembler)
 ```
+
+### Deep Agent + Skills
+
+The agent backend uses [LangChain Deep Agents](https://docs.langchain.com/oss/python/deepagents/overview) (`create_deep_agent`) with a skills-based architecture. Instead of injecting all visualization instructions into the system prompt, skills are defined as `SKILL.md` files in `apps/agent/skills/` and loaded on-demand via progressive disclosure:
+
+```
+apps/agent/skills/
+├── advanced-visualization/SKILL.md   # UI mockups, dashboards, Chart.js, generative art
+├── master-playbook/SKILL.md          # Response philosophy, decision trees, narration patterns
+└── svg-diagrams/SKILL.md             # SVG generation rules, component patterns, diagram types
+```
+
+Deep agents also provide built-in planning (`write_todos`), filesystem tools, and sub-agent support.
 
 ### How It Works
 
 1. **User sends a prompt** via the CopilotKit chat UI
-2. **Agent decides** whether to respond with text, call a tool, or render a visual component
+2. **Deep agent decides** whether to respond with text, call a tool, or render a visual component — consulting relevant skills as needed
 3. **`widgetRenderer`** — a frontend `useComponent` hook — receives the agent's HTML and renders it in a sandboxed iframe
 4. **Skeleton loading** shows while the iframe loads, then content fades in smoothly
 5. **ResizeObserver** inside the iframe reports content height back to the parent for seamless auto-sizing
@@ -154,7 +167,7 @@ apps/
 
 ## Tech Stack
 
-Next.js 16, React 19, Tailwind CSS 4, LangGraph, CopilotKit v2, Turborepo, Recharts
+Next.js 16, React 19, Tailwind CSS 4, LangChain Deep Agents, LangGraph, CopilotKit v2, Turborepo, Recharts
 
 ## License
 

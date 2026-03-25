@@ -1,3 +1,9 @@
+---
+name: "SVG Diagram Generation"
+description: "Generating rich inline SVG diagrams to visually explain systems, processes, architectures, and abstract concepts."
+allowed-tools: []
+---
+
 # SVG Diagram Generation Skill
 
 You can generate rich, inline SVG diagrams to visually explain concepts. Use this skill whenever a visual would help the user understand a system, process, architecture, or mechanism better than text alone.
@@ -46,9 +52,9 @@ Always use this template:
 - **Sentence case always**. Never Title Case or ALL CAPS.
 
 ### Text Width Estimation
-At 14px, each character ≈ 8px wide. At 12px, each character ≈ 7px wide.
-- "Load Balancer" (13 chars) at 14px ≈ 104px → needs rect ≈ 140px wide (with padding).
-- Always compute: `rect_width = max(title_chars × 8, subtitle_chars × 7) + 48px padding`.
+At 14px, each character ~ 8px wide. At 12px, each character ~ 7px wide.
+- "Load Balancer" (13 chars) at 14px ~ 104px -> needs rect ~ 140px wide (with padding).
+- Always compute: `rect_width = max(title_chars x 8, subtitle_chars x 7) + 48px padding`.
 
 ### Colors (Light/Dark Mode Safe)
 Use these semantic color sets that work in both modes:
@@ -169,7 +175,7 @@ If you're rendering inside a system that supports CSS variables, prefer:
 
 1. **ViewBox height**: Find your lowest element (max y + height). Set H = that + 40px.
 2. **No content past x=640 or below y=(H-40)**.
-3. **Text fits in boxes**: `(char_count × 8) + 48 < rect_width` for 14px text.
+3. **Text fits in boxes**: `(char_count x 8) + 48 < rect_width` for 14px text.
 4. **No arrows through boxes**: Trace every line's path — if it crosses a rect, reroute.
 5. **All `<path>` connectors have `fill="none"`**.
 6. **All text has appropriate fill color** — never rely on inheritance (SVG defaults to black).
@@ -207,7 +213,7 @@ For complex topics, use multiple smaller SVGs instead of one dense one:
   <text x="340" y="56" text-anchor="middle" dominant-baseline="central"
         font-size="12" fill="#0F6E56">HTTP POST /api/data</text>
 
-  <!-- Arrow 1→2 -->
+  <!-- Arrow 1->2 -->
   <line x1="340" y1="76" x2="340" y2="100" stroke="#534AB7"
         stroke-width="1.5" marker-end="url(#arrow)"/>
 
@@ -219,7 +225,7 @@ For complex topics, use multiple smaller SVGs instead of one dense one:
   <text x="340" y="142" text-anchor="middle" dominant-baseline="central"
         font-size="12" fill="#534AB7">Validate and transform</text>
 
-  <!-- Arrow 2→3 -->
+  <!-- Arrow 2->3 -->
   <line x1="340" y1="162" x2="340" y2="186" stroke="#854F0B"
         stroke-width="1.5" marker-end="url(#arrow)"/>
 

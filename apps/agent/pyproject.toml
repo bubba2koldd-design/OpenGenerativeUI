@@ -16,4 +16,5 @@ dependencies = [
     "copilotkit>=0.1.77",
     "langgraph-api>=0.7.16",
     "langchain-mcp-adapters>=0.2.1",
+    "deepagents>=0.1.0",
 ]

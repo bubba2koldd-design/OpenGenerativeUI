@@ -1,3 +1,9 @@
+---
+name: "Advanced Visualization Techniques"
+description: "UI mockups, dashboards, advanced interactivity, generative art, simulations, math visualizations, and design system rules for producing rich HTML widget output."
+allowed-tools: []
+---
+
 # Agent Visualization Skills — Volume 2: Advanced Techniques
 
 Prerequisite: Volume 1 (SVG diagrams, basic interactive widgets, Chart.js, Mermaid).
@@ -427,7 +433,7 @@ hardcoded hex values.
 ```
 - Height goes on the wrapper div ONLY, never on canvas.
 - Always set `responsive: true, maintainAspectRatio: false`.
-- For horizontal bar charts: height = (bars × 40) + 80 pixels.
+- For horizontal bar charts: height = (bars x 40) + 80 pixels.
 
 ### Custom Legend (Always Use This)
 Disable Chart.js default legend and build HTML:
@@ -450,7 +456,7 @@ plugins: { legend: { display: false } }
 ```
 
 ### Dashboard Layout
-Metric cards on top → chart below → sendPrompt for drill-down:
+Metric cards on top -> chart below -> sendPrompt for drill-down:
 ```html
 <!-- Metric cards grid -->
 <div style="display: grid;

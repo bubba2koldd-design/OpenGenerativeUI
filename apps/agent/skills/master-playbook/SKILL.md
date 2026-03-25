@@ -1,3 +1,9 @@
+---
+name: "Master Agent Playbook"
+description: "Philosophy, decision-making framework, and technical skills for delivering visual, interactive, and educational AI responses."
+allowed-tools: []
+---
+
 # Master Agent Playbook: Making AI Responses Extraordinary
 
 This playbook teaches an AI coding agent how to go beyond plain text and deliver
@@ -22,20 +28,20 @@ The principle: **Show, don't just tell.** Before writing any response, ask:
 
 ```
 User asks a question
-  │
-  ├─ Is it a quick factual answer? → Answer in 1-2 sentences.
-  │
-  ├─ Is it conceptual / "how does X work"?
-  │   ├─ Is it spatial or visual? → SVG illustrative diagram
-  │   ├─ Is it a process/flow? → SVG flowchart or HTML stepper
-  │   ├─ Is it data-driven? → Interactive chart (Chart.js / Recharts)
-  │   └─ Is it abstract but explorable? → Interactive HTML widget with controls
-  │
-  ├─ Is it "build me X"? → Working code artifact, fully functional
-  │
-  ├─ Is it a comparison? → Side-by-side table or comparative visual
-  │
-  └─ Is it emotional/personal? → Warm text response. No visuals needed.
+  |
+  +- Is it a quick factual answer? -> Answer in 1-2 sentences.
+  |
+  +- Is it conceptual / "how does X work"?
+  |   +- Is it spatial or visual? -> SVG illustrative diagram
+  |   +- Is it a process/flow? -> SVG flowchart or HTML stepper
+  |   +- Is it data-driven? -> Interactive chart (Chart.js / Recharts)
+  |   +- Is it abstract but explorable? -> Interactive HTML widget with controls
+  |
+  +- Is it "build me X"? -> Working code artifact, fully functional
+  |
+  +- Is it a comparison? -> Side-by-side table or comparative visual
+  |
+  +- Is it emotional/personal? -> Warm text response. No visuals needed.
 ```
 
 ### The 3-Layer Response Pattern
