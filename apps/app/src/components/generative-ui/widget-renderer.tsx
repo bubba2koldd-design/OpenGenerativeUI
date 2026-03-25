@@ -361,9 +361,13 @@ window.addEventListener('message', function(e) {
     if (!content) return;
 
     // Strip script tags from HTML before inserting — scripts are handled separately below
+    var rawHtml = e.data.html;
     var tmp = document.createElement('div');
-    tmp.innerHTML = e.data.html;
+    tmp.innerHTML = rawHtml;
     var incomingScripts = [];
+    var scriptOpens = (rawHtml.match(/<script[\\s>]/gi) || []).length;
+    var scriptCloses = (rawHtml.match(/<\\/script>/gi) || []).length;
+    var allScriptsClosed = scriptOpens <= scriptCloses;
     tmp.querySelectorAll('script').forEach(function(s) {
       incomingScripts.push({ src: s.src, text: s.textContent });
       s.remove();
@@ -410,19 +414,25 @@ window.addEventListener('message', function(e) {
       content.innerHTML = tmp.innerHTML;
     }
 
-    // Execute only new scripts (not previously executed)
-    incomingScripts.forEach(function(scriptInfo) {
-      var key = scriptInfo.src || scriptInfo.text;
-      if (content.getAttribute('data-exec-' + btoa(key).slice(0, 16))) return;
-      content.setAttribute('data-exec-' + btoa(key).slice(0, 16), '1');
-      var newScript = document.createElement('script');
-      if (scriptInfo.src) {
-        newScript.src = scriptInfo.src;
-      } else {
-        newScript.textContent = scriptInfo.text;
-      }
-      content.appendChild(newScript);
-    });
+    // Execute only new scripts — skip entirely while a <script> tag is still streaming
+    if (allScriptsClosed) {
+      incomingScripts.forEach(function(scriptInfo) {
+        var key = scriptInfo.src || scriptInfo.text;
+        if (!key || !key.trim()) return;
+        var hash = btoa(unescape(encodeURIComponent(key))).slice(0, 16).replace(/[^a-zA-Z0-9]/g, '');
+        if (!hash || content.getAttribute('data-exec-' + hash)) return;
+        content.setAttribute('data-exec-' + hash, '1');
+        try {
+          var newScript = document.createElement('script');
+          if (scriptInfo.src) {
+            newScript.src = scriptInfo.src;
+          } else {
+            newScript.textContent = scriptInfo.text;
+          }
+          content.appendChild(newScript);
+        } catch(e) {}
+      });
+    }
     reportHeight();
   }
 });
